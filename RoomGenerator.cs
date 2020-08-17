@@ -5,8 +5,11 @@ using UnityEngine;
 public class RoomGenerator : MonoBehaviour
 {
     #region Fields
-    public GameObject roomPrefab;
-    public GameObject corridorPrefab;
+    private GameObject roomPrefab;
+    public Vector3 roomSize;
+
+    private GameObject corridorPrefab;
+    public float corridorWidth;
 
     public Vector2 origin;
 
@@ -15,17 +18,20 @@ public class RoomGenerator : MonoBehaviour
     {
         get
         {
-            return roomPrefab.transform.localScale.x + (roomPrefab.transform.localScale.x / 2);
+            return Mathf.Max(roomSize.x + (roomSize.x / 2), roomSize.y + (roomSize.y / 2));
         }
     }
 
     private Room[,] rooms;
     #endregion
+
     public void GenerateLevel()
     {
         ClearRooms();
 
-        rooms = new Room[size * 3, size * 3];
+
+
+        rooms = new Room[size * 2, size * 2];
         Vector2 arrPos = new Vector2(size, size);
 
         rooms[(int)arrPos.x, (int)arrPos.y] = new Room(null, origin, arrPos, 0);
@@ -63,36 +69,66 @@ public class RoomGenerator : MonoBehaviour
 
     void GenerateRooms()
     {
+        Sprite square = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4);
+        #region Create Room Prefab
+        roomPrefab = new GameObject("Room");
+        roomPrefab.tag = "Room";
+        roomPrefab.SetActive(false);
+        roomPrefab.hideFlags = HideFlags.HideInHierarchy;
+
+        SpriteRenderer roomRend = roomPrefab.AddComponent<SpriteRenderer>();
+        roomRend.sprite = square;
+
+        roomPrefab.transform.localScale = roomSize;
+        #endregion
+        #region Create Corridor Prefab
+        corridorPrefab = new GameObject("Corridor");
+        corridorPrefab.tag = "Room";
+        corridorPrefab.SetActive(false);
+        corridorPrefab.hideFlags = HideFlags.HideInHierarchy;
+
+        SpriteRenderer corridorRend = corridorPrefab.AddComponent<SpriteRenderer>();
+        corridorRend.sprite = square;
+        #endregion
+
         //Rooms
-        foreach(Room r in rooms)
+        foreach (Room r in rooms)
         {
             if(r != null)
-                Instantiate(roomPrefab, r.pos, Quaternion.identity);
+            {
+                GameObject roomGo = Instantiate(roomPrefab, r.pos, Quaternion.identity);
+                roomGo.SetActive(true);
+            }
         }
 
         //Corridors
-        for(int r = 0; r < size * 3 - 1; r++)
+        for(int r = 0; r < size * 2 - 1; r++)
         {
-            for (int c = 0; c < size * 3 - 1; c++)
+            for (int c = 0; c < size * 2 - 1; c++)
             {
                 Room vert1 = rooms[r, c];
                 Room vert2 = rooms[r, c + 1];
 
-                Room r3 = rooms[r, c];
-                Room r4 = rooms[r + 1, c];
+                Room hori1 = rooms[r, c];
+                Room hori2 = rooms[r + 1, c];
 
-                float newScale = roomPrefab.transform.localScale.x / 2;
                 if (vert1 != null && vert2 != null)
                 {
                     Vector2 midpoint = (vert1.pos + vert2.pos) / 2;
                     GameObject corridor = Instantiate(corridorPrefab, midpoint, Quaternion.identity);
-                    corridor.transform.localScale = new Vector3((newScale / 2) + (newScale / 4), newScale, 1);
+                    corridor.SetActive(true);
+
+                    float yScale = Mathf.Abs(vert1.pos.y - vert2.pos.y) - roomSize.y;
+                    corridor.transform.localScale = new Vector3(Mathf.Min(corridorWidth, roomSize.x / 2), yScale, 1);
                 }
-                if (r3 != null && r4 != null)
+                if (hori1 != null && hori2 != null)
                 {
-                    Vector2 midpoint = (r3.pos + r4.pos) / 2;
+                    Vector2 midpoint = (hori1.pos + hori2.pos) / 2;
                     GameObject corridor = Instantiate(corridorPrefab, midpoint, Quaternion.identity);
-                    corridor.transform.localScale = new Vector3(newScale, (newScale / 2) + (newScale / 4), 1);
+                    corridor.SetActive(true);
+
+                    float xScale = Mathf.Abs(hori1.pos.x - hori2.pos.x) - roomSize.x;
+                    corridor.transform.localScale = new Vector3(xScale, Mathf.Min(corridorWidth, roomSize.y / 2), 1);
                 }
             }
         }
@@ -151,3 +187,4 @@ public class Room
         type = roomType;
     }
 }
+
