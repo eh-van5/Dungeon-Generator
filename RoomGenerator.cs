@@ -91,7 +91,7 @@ public class RoomGenerator : MonoBehaviour
         corridorRend.sprite = square;
         #endregion
 
-        //Rooms
+        //Room
         foreach (Room r in rooms)
         {
             if(r != null)
@@ -101,7 +101,7 @@ public class RoomGenerator : MonoBehaviour
             }
         }
 
-        //Corridors
+        //Corridor
         for(int r = 0; r < size * 2 - 1; r++)
         {
             for (int c = 0; c < size * 2 - 1; c++)
