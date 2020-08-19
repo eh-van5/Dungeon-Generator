@@ -12,3 +12,6 @@ To Use:
 - Dungeon Settings can be changed through inspector
 - Generate: Creates procedural generated dungeon with given settings
 - Clear: Clears Dungeon
+
+# Notes
+"Size" field must be at least 1 for dungeon to generate
